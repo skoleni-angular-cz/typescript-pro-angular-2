@@ -1,4 +1,4 @@
-import { Task, TaskState } from './model';
+import { Task, TaskState, TaskWithList, TaskWithText } from './model';
 
 export class TaskStorage {
   private tasks: Task[] = [];
@@ -7,11 +7,23 @@ export class TaskStorage {
     return this.tasks;
   }
 
-  createTask(taskName: string) {
-    const newTask: Task = {
+  createTextTask(taskName: string, taskText: string) {
+    const newTask: TaskWithText = {
       id: this.generateNewTaskId(),
       name: taskName,
       state: TaskState.TODO,
+      text: taskText,
+    };
+
+    this.tasks.push(newTask);
+  }
+
+  createListTask(taskName: string, taskList: string[]) {
+    const newTask: TaskWithList = {
+      id: this.generateNewTaskId(),
+      name: taskName,
+      state: TaskState.TODO,
+      list: taskList,
     };
 
     this.tasks.push(newTask);
