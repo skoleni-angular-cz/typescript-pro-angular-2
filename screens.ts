@@ -1,4 +1,4 @@
-import { Task, TaskState } from './model';
+import { isTaskWithList, isTaskWithText, Task, TaskState } from './model';
 import { TaskStorage } from './task-storage';
 import { consolePrompt } from './util';
 
@@ -54,6 +54,21 @@ async function manageTaskMenu(storage: TaskStorage, taskId: number) {
   console.log('DETAIL UKOLU');
   console.log(`Nazev: ${task.name}`);
   console.log(`Stav: ${task.state}`);
+
+  console.log('---');
+
+  if (isTaskWithText(task)) {
+    console.log(`Text: ${task.text}`)
+  }
+  else if (isTaskWithList(task)) {
+    console.log('Seznam:');
+
+    for (const listItem of task.list) {
+      console.log(`* ${listItem}`);
+    }
+  }
+
+  console.log('---');
 
   if (task.state === TaskState.TODO) {
     console.log('P ... Zacit pracovat na ukolu');
