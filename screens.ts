@@ -38,13 +38,50 @@ function writeAllTasks(storage: TaskStorage) {
 async function createTaskMenu(storage: TaskStorage) {
   console.clear();
   console.log('ZALOZIT NOVY UKOL');
-  console.log('Nazev ukolu:');
+  console.log('T ... Textovy ukol');
+  console.log('S ... Ukol se seznamem');
+  console.log('Z ... Zavrit');
 
-  const taskName = await consolePrompt();
+  const taskTypeAction = await consolePrompt();
 
-  storage.createTask(taskName);
+  if (taskTypeAction === 't') {
+    console.clear();
+    console.log('Nazev ukolu:');
+    const taskName = await consolePrompt();
 
-  await mainMenu(storage);
+    console.log('Text ukolu:');
+    const taskText = await consolePrompt();
+
+    storage.createTextTask(taskName, taskText);
+
+    await mainMenu(storage);
+  }
+  else if (taskTypeAction === 's') {
+    console.clear();
+    console.log('Nazev ukolu:');
+    const taskName = await consolePrompt();
+
+    const taskList: string[] = [];
+
+    while (true) {
+      console.log('Nazev polozky (H pro dokonceni zadavani):');
+      const taskListItemText = await consolePrompt();
+
+      if (taskListItemText === 'h') {
+        break;
+      }
+      else {
+        taskList.push(taskListItemText);
+      }
+    }
+
+    storage.createListTask(taskName, taskList);
+
+    await mainMenu(storage);
+  }
+  else {
+    await mainMenu(storage);
+  }
 }
 
 async function manageTaskMenu(storage: TaskStorage, taskId: number) {
