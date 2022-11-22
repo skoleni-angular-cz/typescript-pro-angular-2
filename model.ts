@@ -19,3 +19,11 @@ export interface TaskWithList {
 }
 
 export type Task = TaskWithText|TaskWithList;
+
+export function isTaskWithText(task: Task): task is TaskWithText {
+  return task.hasOwnProperty("text");
+}
+
+export function isTaskWithList(task: Task): task is TaskWithList {
+  return task.hasOwnProperty("list");
+}
