@@ -4,8 +4,18 @@ export enum TaskState {
   DONE = "DONE"
 }
 
-export interface Task {
+export interface TaskWithText {
   id: number;
   name: string;
   state: TaskState;
+  text: string;
 }
+
+export interface TaskWithList {
+  id: number;
+  name: string;
+  state: TaskState;
+  list: string[];
+}
+
+export type Task = TaskWithText|TaskWithList;
