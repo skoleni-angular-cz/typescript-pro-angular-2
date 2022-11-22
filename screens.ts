@@ -1,9 +1,20 @@
-import { Task } from './model';
+import { Task, TaskState } from './model';
 import { TaskStorage } from './task-storage';
 import { consolePrompt } from './util';
 
 export function taskCompletionStatusToString(task: Task): string {
-  return task.complete ? 'x' : '_';
+  if (task.state === TaskState.TODO) {
+    return '_';
+  }
+  else if (task.state === TaskState.INPROGRESS) {
+    return '~';
+  }
+  else if (task.state === TaskState.DONE) {
+    return 'x';
+  }
+  else {
+    throw new Error(`Neznamy stav ukolu: ${task.state}`);
+  }
 }
 
 function formatBoolean(b: boolean) {
@@ -42,11 +53,12 @@ async function manageTaskMenu(storage: TaskStorage, taskId: number) {
   console.clear();
   console.log('DETAIL UKOLU');
   console.log(`Nazev: ${task.name}`);
-  console.log(`Hotovo: ${formatBoolean(task.complete)}`);
+  console.log(`Stav: ${task.state}`);
 
-  if (task.complete) {
-    console.log('P ... Oznacit ukol k vypracovani');
-  } else {
+  if (task.state === TaskState.TODO) {
+    console.log('P ... Zacit pracovat na ukolu');
+  }
+  else if (task.state === TaskState.INPROGRESS) {
     console.log('H ... Oznacit ukol jako hotovy');
   }
 
@@ -56,10 +68,10 @@ async function manageTaskMenu(storage: TaskStorage, taskId: number) {
   const action = await consolePrompt();
 
   if (action === 'p') {
-    storage.setTaskCompletionStatus(taskId, false);
+    storage.setTaskCompletionStatus(taskId, TaskState.INPROGRESS);
     await manageTaskMenu(storage, taskId);
   } else if (action === 'h') {
-    storage.setTaskCompletionStatus(taskId, true);
+    storage.setTaskCompletionStatus(taskId, TaskState.DONE);
     await manageTaskMenu(storage, taskId);
   } else if (action === 's') {
     storage.deleteTaskById(taskId);

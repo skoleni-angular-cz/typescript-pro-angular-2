@@ -1,4 +1,4 @@
-import { Task } from './model';
+import { Task, TaskState } from './model';
 
 export class TaskStorage {
   private tasks: Task[] = [];
@@ -11,7 +11,7 @@ export class TaskStorage {
     const newTask: Task = {
       id: this.generateNewTaskId(),
       name: taskName,
-      complete: false,
+      state: TaskState.TODO,
     };
 
     this.tasks.push(newTask);
@@ -32,8 +32,8 @@ export class TaskStorage {
     this.tasks.splice(taskIndex, 1);
   }
 
-  setTaskCompletionStatus(taskId: number, completed: boolean) {
-    this.getTaskById(taskId).complete = completed;
+  setTaskCompletionStatus(taskId: number, newState: TaskState) {
+    this.getTaskById(taskId).state = newState;
   }
 
   private generateNewTaskId(): number {
