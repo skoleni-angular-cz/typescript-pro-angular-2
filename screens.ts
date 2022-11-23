@@ -1,13 +1,17 @@
-import { Task } from './model';
+import { isTaskWithList, isTaskWithText, Task, TaskState } from './model';
 import { TaskStorage } from './task-storage';
 import { consolePrompt } from './util';
 
 export function taskCompletionStatusToString(task: Task): string {
-  return task.complete ? 'x' : '_';
-}
-
-function formatBoolean(b: boolean) {
-  return b === true ? 'Ano' : 'Ne';
+  if (task.state === TaskState.TODO) {
+    return '_';
+  } else if (task.state === TaskState.IN_PROGRESS) {
+    return '~';
+  } else if (task.state === TaskState.DONE) {
+    return 'x';
+  } else {
+    throw new Error('Neznamy stav ukolu.');
+  }
 }
 
 function writeAllTasks(storage: TaskStorage) {
@@ -27,13 +31,39 @@ function writeAllTasks(storage: TaskStorage) {
 async function createTaskMenu(storage: TaskStorage) {
   console.clear();
   console.log('ZALOZIT NOVY UKOL');
-  console.log('Nazev ukolu:');
+  console.log('T ... textovy ukol');
+  console.log('S ... ukol se seznamem');
 
+  const userInput = await consolePrompt();
+
+  console.log('Nazev ukolu:');
   const taskName = await consolePrompt();
 
-  storage.createTask(taskName);
+  if (userInput === 't') {
+    console.log('Text ukolu:');
+    const taskText = await consolePrompt();
 
-  await mainMenu(storage);
+    storage.createTextTask(taskName, taskText);
+    await mainMenu(storage);
+  } else if (userInput === 's') {
+    const taskList: string[] = [];
+
+    while (true) {
+      console.log('Polozka seznamu (H pro dokonceni seznamu):');
+      const listItem = await consolePrompt();
+
+      if (listItem === 'h') {
+        break;
+      } else {
+        taskList.push(listItem);
+      }
+    }
+
+    storage.createListTask(taskName, taskList);
+    await mainMenu(storage);
+  } else {
+    console.log('Neplatna volba.');
+  }
 }
 
 async function manageTaskMenu(storage: TaskStorage, taskId: number) {
@@ -42,11 +72,23 @@ async function manageTaskMenu(storage: TaskStorage, taskId: number) {
   console.clear();
   console.log('DETAIL UKOLU');
   console.log(`Nazev: ${task.name}`);
-  console.log(`Hotovo: ${formatBoolean(task.complete)}`);
+  console.log(`Stav: ${task.state}`);
 
-  if (task.complete) {
-    console.log('P ... Oznacit ukol k vypracovani');
-  } else {
+  console.log('---');
+
+  if (isTaskWithText(task)) {
+    console.log(`Text: ${task.text}`);
+  } else if (isTaskWithList(task)) {
+    for (const listItem of task.list) {
+      console.log(`* ${listItem}`);
+    }
+  }
+
+  console.log('---');
+
+  if (task.state === TaskState.TODO) {
+    console.log('T ... Odstartovat ukol');
+  } else if (task.state === TaskState.IN_PROGRESS) {
     console.log('H ... Oznacit ukol jako hotovy');
   }
 
@@ -55,11 +97,11 @@ async function manageTaskMenu(storage: TaskStorage, taskId: number) {
 
   const action = await consolePrompt();
 
-  if (action === 'p') {
-    storage.setTaskCompletionStatus(taskId, false);
+  if (action === 't') {
+    storage.setTaskCompletionStatus(taskId, TaskState.IN_PROGRESS);
     await manageTaskMenu(storage, taskId);
   } else if (action === 'h') {
-    storage.setTaskCompletionStatus(taskId, true);
+    storage.setTaskCompletionStatus(taskId, TaskState.DONE);
     await manageTaskMenu(storage, taskId);
   } else if (action === 's') {
     storage.deleteTaskById(taskId);
